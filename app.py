@@ -25,15 +25,20 @@ feature_names = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
 # Streamlit UI
 st.title("Crop Plantation Suggestion System")
 st.write("Enter the following parameters to get a crop suggestion:")
+st.sidebar.write("Dataset:")
+st.sidebar.write("[Link to Dataset](https://www.kaggle.com/datasets/atharvaingle/crop-recommendation-dataset)")
+
+default_values = [60, 54, 19, 18.74, 62.49, 6.41, 70.23]
 
 # Create input fields
 input_data = {}
-for feature in feature_names:
+for i, feature in enumerate(feature_names):
     input_data[feature] = st.number_input(
         feature.capitalize(),
         min_value=0.0,
         step=0.1,
-        format="%.1f"
+        format="%.1f",
+        value=float(default_values[i])  # Add default value here
     )
 
 # Prediction button
@@ -49,14 +54,14 @@ if st.button("Predict Crop"):
         # Make prediction
         prediction = model.predict(input_scaled)[0]
 
-        st.write(f"Debug: Model prediction (no_label): {prediction}")  
-        
-        # Get crop name
-        predicted_crop = crop_df[crop_df['no_label'] == prediction]['label'].iloc[0]
-
-        
-        # Display result
-        st.success(f"Recommended Crop: **{predicted_crop}**")
+        if all(value == 0 for value in input_data.values()):
+            st.write("No crops can be planted with these conditions.")
+        else:
+            st.write(f"Debug: Model prediction (no_label): {prediction}")  
+            # Get crop name
+            predicted_crop = crop_df[crop_df['no_label'] == prediction]['label'].iloc[0]
+            # Display result
+            st.success(f"Recommended Crop: **{predicted_crop}**")
         
     except ValueError:
         st.error("Invalid input. Please enter numerical values for all features.")
